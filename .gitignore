@@ -1,0 +1,17 @@
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# dbt
+dbt_modules/
+target/
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+
+# VS Code
+.vscode/
