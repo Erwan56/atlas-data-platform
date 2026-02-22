@@ -75,3 +75,9 @@ gcloud projects get-iam-policy atlas-data-platform --flatten="bindings[].members
 ```bash
 gcloud services list --enabled --project=atlas-data-platform | grep iam
 ```
+
+
+https://docs.cloud.google.com/iam/docs/workload-identity-federation
+https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference#authentication
+
+
