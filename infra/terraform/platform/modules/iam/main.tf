@@ -70,3 +70,15 @@ resource "google_storage_bucket_iam_member" "ci_bucket_reader" {
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:${google_service_account.ci.email}"
 }
+
+resource "google_project_iam_member" "tf_admin_notif_channel_editor" {
+  project = var.project_id
+  role    = "roles/monitoring.notificationChannelEditor"
+  member  = "serviceAccount:tf-admin@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "tf_admin_serviceusage_admin" {
+  project = var.project_id
+  role    = "roles/serviceusage.serviceUsageAdmin"
+  member  = "serviceAccount:tf-admin@${var.project_id}.iam.gserviceaccount.com"
+}
