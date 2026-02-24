@@ -7,6 +7,8 @@ on:
       - "infra/terraform/platform/**"
       - ".github/workflows/terraform-platform.yml"
 
+  workflow_dispatch:
+
 permissions:
   id-token: write
   contents: read
@@ -14,6 +16,10 @@ permissions:
 jobs:
   tf:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: infra/terraform/platform
 
     steps:
       - uses: actions/checkout@v4
@@ -23,17 +29,40 @@ jobs:
           workload_identity_provider: "projects/557849827561/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
           service_account: "tf-admin@atlas-data-platform.iam.gserviceaccount.com"
 
+      - name: Debug OIDC claims
+        run: |
+          python - << 'PY'
+          import os, json, base64, urllib.request
+          url = os.environ["ACTIONS_ID_TOKEN_REQUEST_URL"] + "&audience=google-wif"
+          req = urllib.request.Request(url, headers={"Authorization": "Bearer " + os.environ["ACTIONS_ID_TOKEN_REQUEST_TOKEN"]})
+          data = json.loads(urllib.request.urlopen(req).read())
+          jwt = data["value"]
+          payload = jwt.split(".")[1] + "=="
+          claims = json.loads(base64.urlsafe_b64decode(payload.encode()))
+          print("repository:", claims.get("repository"))
+          print("ref:", claims.get("ref"))
+          print("sub:", claims.get("sub"))
+          PY
+
       - uses: hashicorp/setup-terraform@v3
 
+      - name: Debug folder content (before init)
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 2 -type f -name "*.tf" -print
+
       - name: Terraform init
-        working-directory: infra/terraform/platform
-        run: terraform init -backend-config=envs/dev/backend.hcl
+        run: |
+          set -euxo pipefail
+          terraform init -input=false -backend-config=envs/dev/backend.hcl
+          echo "=== AFTER INIT ==="
+          ls -la
+          ls -la .terraform || true
 
       - name: Terraform plan
-        working-directory: infra/terraform/platform
-        run: terraform plan -var-file=envs/dev/terraform.tfvars
+        run: terraform plan -input=false -var-file=envs/dev/terraform.tfvars
 
       - name: Terraform apply
-        if: github.ref == 'refs/heads/main'
-        working-directory: infra/terraform/platform
-        run: terraform apply -auto-approve -var-file=envs/dev/terraform.tfvars
+        # if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve -input=false -var-file=envs/dev/terraform.tfvars
