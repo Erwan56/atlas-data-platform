@@ -6,3 +6,8 @@ bq_datasets = {
   staging = "staging"
   mart    = "mart"
 }
+
+# Billing variables
+billing_account_id = "019317-DE8865-E96867"
+monthly_budget_eur = 50
+alert_emails       = ["erwan.allain@gmail.com"]
