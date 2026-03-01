@@ -84,3 +84,9 @@ resource "google_service_account_iam_member" "tf_admin_token_creator" {
   role               = "roles/iam.serviceAccountTokenCreator"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_owner}/${var.github_repo}"
 }
+
+resource "google_project_iam_member" "tf_admin_bigquery_admin" {
+  project = var.project_id
+  role    = "roles/bigquery.admin"
+  member  = "serviceAccount:tf-admin@${var.project_id}.iam.gserviceaccount.com"
+}
